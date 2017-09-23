@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+    <metadata>
+			<id>BS.Output.Gemini</id>
+			<version>1.0.0</version>
+			<title>Gemini Output for Bug Shooting</title>
+      <authors>Bug Shooting, Alexej Hirsch</authors>
+      <owners>Bug Shooting, Alexej Hirsch</owners>
+      <licenseUrl>https://github.com/BugShooting/Output.Gemini/raw/master/LICENSE.txt</licenseUrl>
+			<projectUrl>https://github.com/BugShooting</projectUrl>
+			<iconUrl>https://github.com/BugShooting/Output.Gemini/raw/master/BS.Output.Gemini/Resources/logo_64.png</iconUrl>
+			<requireLicenseAcceptance>false</requireLicenseAcceptance>
+			<releaseNotes />
+			<description>Attach screenshots to Gemini issues.</description>
+			<copyright />
+			<tags>bugshooting.com/output/v3</tags>
+    </metadata>
+    <files>
+			<file src="BS.Output.Gemini.dll" />
+      <file src="Countersoft.Gemini.Api.dll" />
+      <file src="Countersoft.Gemini.Commons.dll" />
+      <file src="Newtonsoft.Json.dll" />
+      <file src="RestSharp.dll" />
+      <file src="Countersoft.Foundation.Commons.dll" />
+    </files>
+</package>
