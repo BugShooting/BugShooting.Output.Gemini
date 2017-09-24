@@ -169,98 +169,92 @@ namespace BS.Output.Gemini
           {
             gemini = new ServiceManager(Output.Url, userName, password, string.Empty);
           }
-
-          // TODO Abfrage auf NULL korrekt oder doch über Entity.Id ???
-          UserDto user = await Task.Factory.StartNew(() => gemini.User.WhoAmI());
-          if (user is null)
+                  
+          try
           {
-            integratedAuthentication = false;
-            showLogin = true;
-            continue;
-          }
+            
+            // Get available projects
+            List<ProjectDto> projects = await Task.Factory.StartNew(() => gemini.Projects.GetProjects());
 
-          // Get available projects
-          List<ProjectDto> projects = await Task.Factory.StartNew(() => gemini.Projects.GetProjects());
-
-          // TODO archivierte Projekte ???
+            // TODO archivierte Projekte ???
           
+            // Show send window
+            Send send = new Send(Output.Url, Output.LastProjectID, Output.LastIssueTypeID, Output.LastIssueID, projects, fileName);
 
-          // Show send window
-          Send send = new Send(Output.Url, Output.LastProjectID, Output.LastIssueTypeID, Output.LastIssueID, projects, fileName);
+            var sendOwnerHelper = new System.Windows.Interop.WindowInteropHelper(send);
+            sendOwnerHelper.Owner = Owner.Handle;
 
-          var sendOwnerHelper = new System.Windows.Interop.WindowInteropHelper(send);
-          sendOwnerHelper.Owner = Owner.Handle;
+            if (!send.ShowDialog() == true)
+            {
+              return new V3.SendResult(V3.Result.Canceled);
+            }
 
-          if (!send.ShowDialog() == true)
-          {
-            return new V3.SendResult(V3.Result.Canceled);
-          }
+            string fullFileName = String.Format("{0}.{1}", send.FileName, V3.FileHelper.GetFileExtention(Output.FileFormat));
+            string fileMimeType = V3.FileHelper.GetMimeType(Output.FileFormat);
+            byte[] fileBytes = V3.FileHelper.GetFileBytes(Output.FileFormat, ImageData);
 
-          string fullFileName = String.Format("{0}.{1}", send.FileName, V3.FileHelper.GetFileExtention(Output.FileFormat));
-          string fileMimeType = V3.FileHelper.GetMimeType(Output.FileFormat);
-          byte[] fileBytes = V3.FileHelper.GetFileBytes(Output.FileFormat, ImageData);
+            int projectID;
+            int issueTypeID;
+            int issueID;
 
-          int projectID;
-          int issueTypeID;
-          int issueID;
+            if (send.CreateNewIssue)
+            {
 
-          if (send.CreateNewIssue)
-          {
+              projectID = send.ProjectID;
+              issueTypeID = send.IssueTypeID;
 
-            projectID = send.ProjectID;
-            issueTypeID = send.IssueTypeID;
+              UserDto user = await Task.Factory.StartNew(() => gemini.User.WhoAmI());
 
-            Issue issue = new Issue();
-            issue.ProjectId = projectID;
-            issue.TypeId = issueTypeID;
-            issue.Title = send.Title;
-            issue.Description = send.Description;
-            issue.ReportedBy = user.Entity.Id;
+              Issue issue = new Issue();
+              issue.ProjectId = projectID;
+              issue.TypeId = issueTypeID;
+              issue.Title = send.Title;
+              issue.Description = send.Description;
+              issue.ReportedBy = user.Entity.Id;
 
-            IssueAttachment attachment = new IssueAttachment();
-            attachment.ContentLength = fileBytes.Length;
-            attachment.ContentType = fileMimeType;
-            attachment.Content = fileBytes;
-            attachment.Name = fullFileName;
-            issue.Attachments.Add(attachment);
+              IssueAttachment attachment = new IssueAttachment();
+              attachment.ContentLength = fileBytes.Length;
+              attachment.ContentType = fileMimeType;
+              attachment.Content = fileBytes;
+              attachment.Name = fullFileName;
+              issue.Attachments.Add(attachment);
 
-            IssueDto createdIssue = await Task.Factory.StartNew(() => gemini.Item.Create(issue));
+              IssueDto createdIssue = await Task.Factory.StartNew(() => gemini.Item.Create(issue));
            
-            issueID = createdIssue.Id;
+              issueID = createdIssue.Id;
         
-          }
-          else
-          {
+            }
+            else
+            {
 
-            issueID = send.IssueID;
+              issueID = send.IssueID;
 
-            IssueDto issue = await Task.Factory.StartNew(() => gemini.Item.Get(issueID));
+              IssueDto issue = await Task.Factory.StartNew(() => gemini.Item.Get(issueID));
 
-            projectID = issue.Project.Id;
-            issueTypeID = Output.LastIssueTypeID;
+              projectID = issue.Project.Id;
+              issueTypeID = Output.LastIssueTypeID;
 
-            IssueAttachment attachment = new IssueAttachment();
-            attachment.ProjectId = projectID;
-            attachment.IssueId = issueID;
-            attachment.ContentLength = fileBytes.Length;
-            attachment.ContentType = fileMimeType;
-            attachment.Content = fileBytes;
-            attachment.Name = fullFileName;
+              IssueAttachment attachment = new IssueAttachment();
+              attachment.ProjectId = projectID;
+              attachment.IssueId = issueID;
+              attachment.ContentLength = fileBytes.Length;
+              attachment.ContentType = fileMimeType;
+              attachment.Content = fileBytes;
+              attachment.Name = fullFileName;
         
-            await Task.Factory.StartNew(() => gemini.Item.IssueAttachmentCreate(attachment));
+              await Task.Factory.StartNew(() => gemini.Item.IssueAttachmentCreate(attachment));
 
-          }
+            }
 
+        
+            // Open issue in browser
+            if (Output.OpenItemInBrowser)
+            {
+              V3.WebHelper.OpenUrl(String.Format("{0}/workspace/{1}/item/{2}", Output.Url, projectID, issueID));
+            }
 
-          // Open issue in browser
-          if (Output.OpenItemInBrowser)
-          {
-            V3.WebHelper.OpenUrl(String.Format("{0}/workspace/{1}/item/{2}", Output.Url, projectID, issueID));
-          }
-
-
-          return new V3.SendResult(V3.Result.Success,
-                                    new Output(Output.Name,
+            return new V3.SendResult(V3.Result.Success,
+                                   new Output(Output.Name,
                                               Output.Url,
                                               (rememberCredentials) ? false : Output.IntegratedAuthentication,
                                               (rememberCredentials) ? userName : Output.UserName,
@@ -272,6 +266,15 @@ namespace BS.Output.Gemini
                                               issueTypeID,
                                               issueID));
 
+          }
+          catch (RestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+          {
+            // Login failed
+            integratedAuthentication = false;
+            showLogin = true;
+            continue;
+          }
+          
         }
 
       }
