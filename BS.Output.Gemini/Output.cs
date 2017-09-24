@@ -8,6 +8,7 @@
     string url;
     string userName;
     string password;
+    bool integratedAuthentication;
     string fileName;
     string fileFormat;
     bool openItemInBrowser;
@@ -16,9 +17,10 @@
     int lastIssueID;
 
     public Output(string name, 
-                  string url, 
+                  string url,
+                  bool integratedAuthentication,
                   string userName,
-                  string password, 
+                  string password,
                   string fileName, 
                   string fileFormat,
                   bool openItemInBrowser, 
@@ -28,6 +30,7 @@
     {
       this.name = name;
       this.url = url;
+      this.integratedAuthentication = integratedAuthentication;
       this.userName = userName;
       this.password = password;
       this.fileName = fileName;
@@ -52,7 +55,12 @@
     {
       get { return url; }
     }
-       
+
+    public bool IntegratedAuthentication
+    {
+      get { return integratedAuthentication; }
+    }
+
     public string UserName
     {
       get { return userName; }
@@ -62,7 +70,7 @@
     {
       get { return password; }
     }
-          
+
     public string FileName
     {
       get { return fileName; }
@@ -85,7 +93,7 @@
 
     public int LastIssueTypeID
     {
-      get { return LastIssueTypeID; }
+      get { return lastIssueTypeID; }
     }
 
     public int LastIssueID

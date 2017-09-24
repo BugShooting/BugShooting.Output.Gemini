@@ -4,13 +4,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Text.RegularExpressions;
+using Countersoft.Gemini.Commons.Dto;
 
 namespace BS.Output.Gemini
 {
   partial class Send : Window
   {
  
-    public Send(string url, string lastProjectID, string lastIssueID, string fileName)
+    public Send(string url, int lastProjectID, int lastIssueTypeID, int lastIssueID, List<ProjectDto> projects, string fileName)
     {
       InitializeComponent();
       
@@ -22,11 +23,11 @@ namespace BS.Output.Gemini
       Url.Text = url;
       NewIssue.IsChecked = true;
       ProjectComboBox.SelectedValue = lastProjectID;
-      IssueIDTextBox.Text = lastIssueID;
+      IssueIDTextBox.Text = lastIssueID.ToString();
       FileNameTextBox.Text = fileName;
 
       ProjectComboBox.SelectionChanged += ValidateData;
-      SummaryTextBox.TextChanged += ValidateData;
+      TitleTextBox.TextChanged += ValidateData;
       DescriptionTextBox.TextChanged += ValidateData;
       IssueIDTextBox.TextChanged += ValidateData;
       FileNameTextBox.TextChanged += ValidateData;
@@ -43,10 +44,15 @@ namespace BS.Output.Gemini
     {
       get { return (int)ProjectComboBox.SelectedValue; }
     }
-      
-    public string Summary
+
+    public int IssueTypeID
     {
-      get { return SummaryTextBox.Text; }
+      get { return (int)IssueTypeComboBox.SelectedValue; }
+    }
+
+    public string IssueTitle
+    {
+      get { return TitleTextBox.Text; }
     }
 
     public string Description
@@ -74,8 +80,8 @@ namespace BS.Output.Gemini
         DescriptionControls.Visibility = Visibility.Visible;
         IssueIDControls.Visibility = Visibility.Collapsed;
 
-        SummaryTextBox.SelectAll();
-        SummaryTextBox.Focus();
+        TitleTextBox.SelectAll();
+        TitleTextBox.Focus();
       }
       else
       {
@@ -99,7 +105,7 @@ namespace BS.Output.Gemini
     
     private void ValidateData(object sender, EventArgs e)
     {
-      OK.IsEnabled = ((CreateNewIssue && Validation.IsValid(ProjectComboBox) && Validation.IsValid(SummaryTextBox) && Validation.IsValid(DescriptionTextBox)) ||
+      OK.IsEnabled = ((CreateNewIssue && Validation.IsValid(ProjectComboBox) && Validation.IsValid(IssueTypeComboBox) && Validation.IsValid(TitleTextBox) && Validation.IsValid(DescriptionTextBox)) ||
                       (!CreateNewIssue && Validation.IsValid(IssueIDTextBox))) &&
                      Validation.IsValid(FileNameTextBox);
     }

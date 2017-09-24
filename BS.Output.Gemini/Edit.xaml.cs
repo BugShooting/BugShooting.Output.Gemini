@@ -65,14 +65,39 @@ namespace BS.Output.Gemini
       get { return UrlTextBox.Text; }
     }
 
+    public bool IntegratedAuthentication
+    {
+      get { return IntegratedAuthenticationCheckBox.IsChecked.Value; }
+    }
+
     public string UserName
     {
-      get { return UserNameTextBox.Text; }
+      get
+      {
+        if (IntegratedAuthenticationCheckBox.IsChecked.Value)
+        {
+          return string.Empty;
+        }
+        else
+        {
+          return UserNameTextBox.Text;
+        }
+      }
     }
 
     public string Password
     {
-      get { return PasswordBox.Password; }
+      get
+      {
+        if (IntegratedAuthenticationCheckBox.IsChecked.Value)
+        {
+          return string.Empty;
+        }
+        else
+        {
+          return PasswordBox.Password;
+        }
+      }
     }
 
     public string FileName
@@ -89,8 +114,22 @@ namespace BS.Output.Gemini
     {
       get { return OpenItemInBrowserCheckBox.IsChecked.Value; }
     }
-   
-    
+
+    private void IntegratedAuthenticationCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+
+      if (IntegratedAuthenticationCheckBox.IsChecked.Value)
+      {
+        UserNameControls.Visibility = Visibility.Collapsed;
+        PasswordControls.Visibility = Visibility.Collapsed;
+      }
+      else{
+        UserNameControls.Visibility = Visibility.Visible;
+        PasswordControls.Visibility = Visibility.Visible;
+      }
+
+    }
+
     private void FileNameReplacement_Click(object sender, RoutedEventArgs e)
     {
       FileNameReplacement.ContextMenu.IsEnabled = true;
@@ -124,6 +163,6 @@ namespace BS.Output.Gemini
     {
       DialogResult = true;     
     }
-
+        
   }
 }

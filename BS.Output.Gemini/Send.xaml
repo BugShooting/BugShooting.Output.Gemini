@@ -25,13 +25,21 @@
       <Label Grid.Column="0">Project</Label>
       <ComboBox x:Name="ProjectComboBox" Grid.Column="1" SelectedValuePath="ProjectID" local:Validation.Required="True" />
     </Grid>
+    <Grid x:Name="IssueTypeControls" Margin="4">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" SharedSizeGroup="Label"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Label Grid.Column="0">Issue type</Label>
+      <ComboBox x:Name="IssueTypeComboBox" Grid.Column="1" SelectedValuePath="Id" local:Validation.Required="True" />
+    </Grid>
     <Grid x:Name="SummaryControls" Margin="4">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" SharedSizeGroup="Label"/>
         <ColumnDefinition Width="*"/>
       </Grid.ColumnDefinitions>
-      <Label Grid.Column="0">Summary</Label>
-      <TextBox x:Name="SummaryTextBox" Grid.Column="1" VerticalContentAlignment="Center" local:Validation.Required="True" />
+      <Label Grid.Column="0">Title</Label>
+      <TextBox x:Name="TitleTextBox" Grid.Column="1" VerticalContentAlignment="Center" local:Validation.Required="True" />
     </Grid>
     <Grid x:Name="DescriptionControls" Margin="4">
       <Grid.ColumnDefinitions>

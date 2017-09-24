@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using System.ServiceModel;
-using System.Web;
 using System.Threading.Tasks;
+using Countersoft.Gemini.Api;
+using Countersoft.Gemini.Commons.Dto;
+using Countersoft.Gemini.Commons.Entity;
 
 namespace BS.Output.Gemini
 {
@@ -39,7 +41,8 @@ namespace BS.Output.Gemini
     {
       
       Output output = new Output(Name, 
-                                 String.Empty, 
+                                 String.Empty,
+                                 false,
                                  String.Empty, 
                                  String.Empty, 
                                  "Screenshot",
@@ -65,6 +68,7 @@ namespace BS.Output.Gemini
 
         return new Output(edit.OutputName,
                           edit.Url,
+                          edit.IntegratedAuthentication,
                           edit.UserName,
                           edit.Password,
                           edit.FileName,
@@ -88,6 +92,7 @@ namespace BS.Output.Gemini
 
       outputValues.Add(new OutputValue("Name", Output.Name));
       outputValues.Add(new OutputValue("Url", Output.Url));
+      outputValues.Add(new OutputValue("IntegratedAuthentication", Convert.ToString(Output.IntegratedAuthentication)));
       outputValues.Add(new OutputValue("UserName", Output.UserName));
       outputValues.Add(new OutputValue("Password",Output.Password, true));
       outputValues.Add(new OutputValue("OpenItemInBrowser", Convert.ToString(Output.OpenItemInBrowser)));
@@ -105,9 +110,10 @@ namespace BS.Output.Gemini
     {
 
       return new Output(OutputValues["Name", this.Name].Value,
-                        OutputValues["Url", ""].Value, 
+                        OutputValues["Url", ""].Value,
+                        Convert.ToBoolean(OutputValues["IntegratedAuthentication", Convert.ToString(true)].Value),
                         OutputValues["UserName", ""].Value,
-                        OutputValues["Password", ""].Value, 
+                        OutputValues["Password", ""].Value,
                         OutputValues["FileName", "Screenshot"].Value, 
                         OutputValues["FileFormat", ""].Value,
                         Convert.ToBoolean(OutputValues["OpenItemInBrowser", Convert.ToString(true)].Value),
@@ -123,8 +129,150 @@ namespace BS.Output.Gemini
       try
       {
 
-        // TODO
-        return null;
+        bool integratedAuthentication = Output.IntegratedAuthentication;
+        string userName = Output.UserName;
+        string password = Output.Password;
+        bool showLogin = !integratedAuthentication && (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password));
+        bool rememberCredentials = false;
+
+        string fileName = V3.FileHelper.GetFileName(Output.FileName, Output.FileFormat, ImageData);
+       
+        while (true)
+        {
+
+          if (showLogin)
+          {
+
+            // Show credentials window
+            Credentials credentials = new Credentials(Output.Url, userName, password, rememberCredentials);
+
+            var credentialsOwnerHelper = new System.Windows.Interop.WindowInteropHelper(credentials);
+            credentialsOwnerHelper.Owner = Owner.Handle;
+
+            if (credentials.ShowDialog() != true)
+            {
+              return new V3.SendResult(V3.Result.Canceled);
+            }
+
+            userName = credentials.UserName;
+            password = credentials.Password;
+            rememberCredentials = credentials.Remember;
+
+          }
+
+          ServiceManager gemini;
+          if (integratedAuthentication)
+          {
+            gemini = new ServiceManager(Output.Url);
+          }
+          else
+          {
+            gemini = new ServiceManager(Output.Url, userName, password, string.Empty);
+          }
+
+          // TODO Abfrage auf NULL korrekt oder doch über Entity.Id ???
+          UserDto user = await Task.Factory.StartNew(() => gemini.User.WhoAmI());
+          if (user is null)
+          {
+            integratedAuthentication = false;
+            showLogin = true;
+            continue;
+          }
+
+          // Get available projects
+          List<ProjectDto> projects = await Task.Factory.StartNew(() => gemini.Projects.GetProjects());
+
+          // TODO archivierte Projekte ???
+          
+
+          // Show send window
+          Send send = new Send(Output.Url, Output.LastProjectID, Output.LastIssueTypeID, Output.LastIssueID, projects, fileName);
+
+          var sendOwnerHelper = new System.Windows.Interop.WindowInteropHelper(send);
+          sendOwnerHelper.Owner = Owner.Handle;
+
+          if (!send.ShowDialog() == true)
+          {
+            return new V3.SendResult(V3.Result.Canceled);
+          }
+
+          string fullFileName = String.Format("{0}.{1}", send.FileName, V3.FileHelper.GetFileExtention(Output.FileFormat));
+          string fileMimeType = V3.FileHelper.GetMimeType(Output.FileFormat);
+          byte[] fileBytes = V3.FileHelper.GetFileBytes(Output.FileFormat, ImageData);
+
+          int projectID;
+          int issueTypeID;
+          int issueID;
+
+          if (send.CreateNewIssue)
+          {
+
+            projectID = send.ProjectID;
+            issueTypeID = send.IssueTypeID;
+
+            Issue issue = new Issue();
+            issue.ProjectId = projectID;
+            issue.TypeId = issueTypeID;
+            issue.Title = send.Title;
+            issue.Description = send.Description;
+            issue.ReportedBy = user.Entity.Id;
+
+            IssueAttachment attachment = new IssueAttachment();
+            attachment.ContentLength = fileBytes.Length;
+            attachment.ContentType = fileMimeType;
+            attachment.Content = fileBytes;
+            attachment.Name = fullFileName;
+            issue.Attachments.Add(attachment);
+
+            IssueDto createdIssue = await Task.Factory.StartNew(() => gemini.Item.Create(issue));
+           
+            issueID = createdIssue.Id;
+        
+          }
+          else
+          {
+
+            issueID = send.IssueID;
+
+            IssueDto issue = await Task.Factory.StartNew(() => gemini.Item.Get(issueID));
+
+            projectID = issue.Project.Id;
+            issueTypeID = Output.LastIssueTypeID;
+
+            IssueAttachment attachment = new IssueAttachment();
+            attachment.ProjectId = projectID;
+            attachment.IssueId = issueID;
+            attachment.ContentLength = fileBytes.Length;
+            attachment.ContentType = fileMimeType;
+            attachment.Content = fileBytes;
+            attachment.Name = fullFileName;
+        
+            await Task.Factory.StartNew(() => gemini.Item.IssueAttachmentCreate(attachment));
+
+          }
+
+
+          // Open issue in browser
+          if (Output.OpenItemInBrowser)
+          {
+            V3.WebHelper.OpenUrl(String.Format("{0}/workspace/{1}/item/{2}", Output.Url, projectID, issueID));
+          }
+
+
+          return new V3.SendResult(V3.Result.Success,
+                                    new Output(Output.Name,
+                                              Output.Url,
+                                              (rememberCredentials) ? false : Output.IntegratedAuthentication,
+                                              (rememberCredentials) ? userName : Output.UserName,
+                                              (rememberCredentials) ? password : Output.Password,
+                                              Output.FileName,
+                                              Output.FileFormat,
+                                              Output.OpenItemInBrowser,
+                                              projectID,
+                                              issueTypeID,
+                                              issueID));
+
+        }
 
       }
       catch (Exception ex)
@@ -133,6 +281,6 @@ namespace BS.Output.Gemini
       }
 
     }
-      
+
   }
 }

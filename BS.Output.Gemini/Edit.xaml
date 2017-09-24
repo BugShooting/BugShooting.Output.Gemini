@@ -34,10 +34,17 @@
         <ColumnDefinition Width="Auto" SharedSizeGroup="Label"/>
         <ColumnDefinition Width="*"/>
       </Grid.ColumnDefinitions>
+      <CheckBox x:Name="IntegratedAuthenticationCheckBox" Grid.Column="1" Content="Integrated authentication" Checked="IntegratedAuthenticationCheckBox_Changed" Unchecked="IntegratedAuthenticationCheckBox_Changed" />
+    </Grid>
+    <Grid x:Name="UserNameControls" Margin="4">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" SharedSizeGroup="Label"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
       <Label Grid.Column="0">User</Label>
       <TextBox x:Name="UserNameTextBox" Grid.Column="1" VerticalContentAlignment="Center" />
     </Grid>
-    <Grid Margin="4">
+    <Grid x:Name="PasswordControls" Margin="4">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" SharedSizeGroup="Label"/>
         <ColumnDefinition Width="*"/>
