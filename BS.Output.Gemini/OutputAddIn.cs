@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Threading.Tasks;
+using System.Linq;
 using Countersoft.Gemini.Api;
 using Countersoft.Gemini.Commons.Dto;
 using Countersoft.Gemini.Commons.Entity;
@@ -173,13 +174,22 @@ namespace BS.Output.Gemini
           try
           {
             
-            // Get available projects
-            List<ProjectDto> projects = await Task.Factory.StartNew(() => gemini.Projects.GetProjects());
+            // Get active projects
+            List<ProjectDto> allProjects = await Task.Factory.StartNew(() => gemini.Projects.GetProjects());
+            List<ProjectDto> projects = new List<ProjectDto>();
+            foreach (ProjectDto project in allProjects)
+            {
+              if (!project.Entity.Archived)
+              {
+                projects.Add(project);
+              }
+            }
 
-            // TODO archivierte Projekte ???
-          
+            // Get issue types
+            List<IssueTypeDto> issueTypes = await Task.Factory.StartNew(() => gemini.Meta.GetIssueTypes());
+           
             // Show send window
-            Send send = new Send(Output.Url, Output.LastProjectID, Output.LastIssueTypeID, Output.LastIssueID, projects, fileName);
+            Send send = new Send(Output.Url, Output.LastProjectID, Output.LastIssueTypeID, Output.LastIssueID, projects, issueTypes, fileName);
 
             var sendOwnerHelper = new System.Windows.Interop.WindowInteropHelper(send);
             sendOwnerHelper.Owner = Owner.Handle;
@@ -208,7 +218,7 @@ namespace BS.Output.Gemini
               Issue issue = new Issue();
               issue.ProjectId = projectID;
               issue.TypeId = issueTypeID;
-              issue.Title = send.Title;
+              issue.Title = send.IssueTitle;
               issue.Description = send.Description;
               issue.ReportedBy = user.Entity.Id;
 

@@ -10,19 +10,31 @@ namespace BS.Output.Gemini
 {
   partial class Send : Window
   {
- 
-    public Send(string url, int lastProjectID, int lastIssueTypeID, int lastIssueID, List<ProjectDto> projects, string fileName)
+
+    List<IssueTypeDto> issueTypes;
+
+    public Send(string url, int lastProjectID, int lastIssueTypeID, int lastIssueID, List<ProjectDto> projects, List<IssueTypeDto> issueTypes, string fileName)
     {
       InitializeComponent();
-      
-      // TODO
-      //List<ProjectItem> projectItems = new List<ProjectItem>();
-      //InitProjects(projectItems, projects, String.Empty);
-      //ProjectComboBox.ItemsSource = projectItems;
+
+      this.issueTypes = issueTypes;
+
+      List<ProjectItem> projectItems = new List<ProjectItem>();
+      foreach (ProjectDto project in projects)
+      {
+        projectItems.Add(new ProjectItem(project.Entity.Id, project.Label, project.Entity.WorkflowId));
+      }
+      ProjectComboBox.ItemsSource = projectItems;
 
       Url.Text = url;
       NewIssue.IsChecked = true;
       ProjectComboBox.SelectedValue = lastProjectID;
+
+      if (ProjectComboBox.SelectedValue != null)
+      {
+        IssueTypeComboBox.SelectedValue = lastIssueTypeID;
+      }
+          
       IssueIDTextBox.Text = lastIssueID.ToString();
       FileNameTextBox.Text = fileName;
 
@@ -98,6 +110,32 @@ namespace BS.Output.Gemini
 
     }
 
+    private void ProjectComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+
+      if (ProjectComboBox.SelectedItem is null)
+      {
+        IssueTypeComboBox.ItemsSource = null;
+      }
+      else
+      {
+
+        int workflowId = ((ProjectItem)ProjectComboBox.SelectedItem).WorkflowId;
+        
+        List<ItemTypeItem> itemTypeItems = new List<ItemTypeItem>();
+        foreach (IssueTypeDto itemType in issueTypes)
+        {
+          if (itemType.Entity.Workflow.ReferenceId == workflowId)
+          {
+            itemTypeItems.Add(new ItemTypeItem(itemType.Entity.Id, itemType.Entity.Label));
+          }
+        }
+        IssueTypeComboBox.ItemsSource = itemTypeItems;
+
+      }
+
+    }
+
     private void IssueID_PreviewTextInput(object sender, TextCompositionEventArgs e)
     {
       e.Handled = Regex.IsMatch(e.Text, "[^0-9]+");
@@ -120,25 +158,55 @@ namespace BS.Output.Gemini
   internal class ProjectItem
   {
     
-    private string projectID;
-    private string fullName;
+    private int id;
+    private string name;
+    private int workflowId;
 
-    public ProjectItem(string projectID, string fullName)
+    public ProjectItem(int id, string name, int workflowId)
     {
-      this.projectID = projectID;
-      this.fullName = fullName;
+      this.id = id;
+      this.name = name;
+      this.workflowId = workflowId;
     }
 
-    public string ProjectID
+    public int Id
     {
-      get { return projectID; }
+      get { return id; }
     }
 
-    public override string ToString()
+    public string Name
     {
-      return fullName;
+      get { return name; }
     }
 
+    public int WorkflowId
+    {
+      get { return workflowId; }
+    }
+
+  }
+
+  internal class ItemTypeItem
+  {
+
+    private int id;
+    private string name;
+    public ItemTypeItem(int id, string name)
+    {
+      this.id = id;
+      this.name = name;
+    }
+
+    public int Id
+    {
+      get { return id; }
+    }
+
+    public string Name
+    {
+      get { return name; }
+    }
+    
   }
 
 }
