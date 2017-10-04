@@ -31,9 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BS.Output">
-      <HintPath>O:\Bin\BS.Output.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="BS.Output, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\BugShootingOutputApi.3.0.0\lib\BS.Output.dll</HintPath>
     </Reference>
     <Reference Include="Countersoft.Foundation.Commons">
       <HintPath>..\Lib\Countersoft.Foundation.Commons.dll</HintPath>
@@ -97,6 +96,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Resources\logo_64.png" />
   </ItemGroup>
   <ItemGroup>
