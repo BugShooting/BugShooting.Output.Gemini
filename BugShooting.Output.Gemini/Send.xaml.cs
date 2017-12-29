@@ -6,7 +6,7 @@ using System.Windows.Input;
 using System.Text.RegularExpressions;
 using Countersoft.Gemini.Commons.Dto;
 
-namespace BS.Output.Gemini
+namespace BugShooting.Output.Gemini
 {
   partial class Send : Window
   {

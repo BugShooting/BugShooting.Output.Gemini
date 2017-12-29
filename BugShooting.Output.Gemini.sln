@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.12
+VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{F6580491-A788-4604-9B10-31AE99C6A1A3}"
 	ProjectSection(SolutionItems) = preProject
-		NuGet\BS.Output.Gemini.nuspec = NuGet\BS.Output.Gemini.nuspec
+		NuGet\BugShooting.Output.Gemini.nuspec = NuGet\BugShooting.Output.Gemini.nuspec
 		NuGet\nuget.exe = NuGet\nuget.exe
 	EndProjectSection
 EndProject
@@ -13,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		LICENSE.txt = LICENSE.txt
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BS.Output.Gemini", "BS.Output.Gemini\BS.Output.Gemini.csproj", "{72AE9E3B-42E3-444C-B460-F17A2CD6AD14}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{16C1385B-C698-4A91-8171-BA69BEA60ACB}"
 	ProjectSection(SolutionItems) = preProject
@@ -24,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{16C1385B-C69
 		Lib\Newtonsoft.Json.dll = Lib\Newtonsoft.Json.dll
 		Lib\RestSharp.dll = Lib\RestSharp.dll
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BugShooting.Output.Gemini", "BugShooting.Output.Gemini\BugShooting.Output.Gemini.csproj", "{72AE9E3B-42E3-444C-B460-F17A2CD6AD14}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

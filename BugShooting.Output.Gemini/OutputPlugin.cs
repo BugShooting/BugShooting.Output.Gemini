@@ -7,10 +7,13 @@ using System.Linq;
 using Countersoft.Gemini.Api;
 using Countersoft.Gemini.Commons.Dto;
 using Countersoft.Gemini.Commons.Entity;
+using BS.Plugin.V3.Output;
+using BS.Plugin.V3.Common;
+using BS.Plugin.V3.Utilities;
 
-namespace BS.Output.Gemini
+namespace BugShooting.Output.Gemini
 {
-  public class OutputAddIn: V3.OutputAddIn<Output>
+  public class OutputPlugin: OutputPlugin<Output>
   {
 
     protected override string Name
@@ -86,45 +89,45 @@ namespace BS.Output.Gemini
 
     }
 
-    protected override OutputValueCollection SerializeOutput(Output Output)
+    protected override OutputValues SerializeOutput(Output Output)
     {
 
-      OutputValueCollection outputValues = new OutputValueCollection();
+      OutputValues outputValues = new OutputValues();
 
-      outputValues.Add(new OutputValue("Name", Output.Name));
-      outputValues.Add(new OutputValue("Url", Output.Url));
-      outputValues.Add(new OutputValue("IntegratedAuthentication", Convert.ToString(Output.IntegratedAuthentication)));
-      outputValues.Add(new OutputValue("UserName", Output.UserName));
-      outputValues.Add(new OutputValue("Password",Output.Password, true));
-      outputValues.Add(new OutputValue("OpenItemInBrowser", Convert.ToString(Output.OpenItemInBrowser)));
-      outputValues.Add(new OutputValue("FileName", Output.FileName));
-      outputValues.Add(new OutputValue("FileFormat", Output.FileFormat));
-      outputValues.Add(new OutputValue("LastProjectID", Output.LastProjectID.ToString()));
-      outputValues.Add(new OutputValue("LastIssueTypeID", Output.LastIssueTypeID.ToString()));
-      outputValues.Add(new OutputValue("LastIssueID", Output.LastIssueID.ToString()));
+      outputValues.Add("Name", Output.Name);
+      outputValues.Add("Url", Output.Url);
+      outputValues.Add("IntegratedAuthentication", Convert.ToString(Output.IntegratedAuthentication));
+      outputValues.Add("UserName", Output.UserName);
+      outputValues.Add("Password",Output.Password, true);
+      outputValues.Add("OpenItemInBrowser", Convert.ToString(Output.OpenItemInBrowser));
+      outputValues.Add("FileName", Output.FileName);
+      outputValues.Add("FileFormat", Output.FileFormat);
+      outputValues.Add("LastProjectID", Output.LastProjectID.ToString());
+      outputValues.Add("LastIssueTypeID", Output.LastIssueTypeID.ToString());
+      outputValues.Add("LastIssueID", Output.LastIssueID.ToString());
 
       return outputValues;
       
     }
 
-    protected override Output DeserializeOutput(OutputValueCollection OutputValues)
+    protected override Output DeserializeOutput(OutputValues OutputValues)
     {
 
-      return new Output(OutputValues["Name", this.Name].Value,
-                        OutputValues["Url", ""].Value,
-                        Convert.ToBoolean(OutputValues["IntegratedAuthentication", Convert.ToString(true)].Value),
-                        OutputValues["UserName", ""].Value,
-                        OutputValues["Password", ""].Value,
-                        OutputValues["FileName", "Screenshot"].Value, 
-                        OutputValues["FileFormat", ""].Value,
-                        Convert.ToBoolean(OutputValues["OpenItemInBrowser", Convert.ToString(true)].Value),
-                        Convert.ToInt32(OutputValues["LastProjectID", "1"].Value),
-                        Convert.ToInt32(OutputValues["LastIssueTypeID", "1"].Value),
-                        Convert.ToInt32(OutputValues["LastIssueID", "1"].Value));
+      return new Output(OutputValues["Name", this.Name],
+                        OutputValues["Url", ""],
+                        Convert.ToBoolean(OutputValues["IntegratedAuthentication", Convert.ToString(true)]),
+                        OutputValues["UserName", ""],
+                        OutputValues["Password", ""],
+                        OutputValues["FileName", "Screenshot"], 
+                        OutputValues["FileFormat", ""],
+                        Convert.ToBoolean(OutputValues["OpenItemInBrowser", Convert.ToString(true)]),
+                        Convert.ToInt32(OutputValues["LastProjectID", "1"]),
+                        Convert.ToInt32(OutputValues["LastIssueTypeID", "1"]),
+                        Convert.ToInt32(OutputValues["LastIssueID", "1"]));
 
     }
 
-    protected override async Task<V3.SendResult> Send(IWin32Window Owner, Output Output, V3.ImageData ImageData)
+    protected override async Task<SendResult> Send(IWin32Window Owner, Output Output, ImageData ImageData)
     {
 
       try
@@ -136,7 +139,7 @@ namespace BS.Output.Gemini
         bool showLogin = !integratedAuthentication && (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password));
         bool rememberCredentials = false;
 
-        string fileName = V3.FileHelper.GetFileName(Output.FileName, Output.FileFormat, ImageData);
+        string fileName = AttributeHelper.ReplaceAttributes(Output.FileName, ImageData);
        
         while (true)
         {
@@ -152,7 +155,7 @@ namespace BS.Output.Gemini
 
             if (credentials.ShowDialog() != true)
             {
-              return new V3.SendResult(V3.Result.Canceled);
+              return new SendResult(Result.Canceled);
             }
 
             userName = credentials.UserName;
@@ -196,12 +199,12 @@ namespace BS.Output.Gemini
 
             if (!send.ShowDialog() == true)
             {
-              return new V3.SendResult(V3.Result.Canceled);
+              return new SendResult(Result.Canceled);
             }
 
-            string fullFileName = String.Format("{0}.{1}", send.FileName, V3.FileHelper.GetFileExtention(Output.FileFormat));
-            string fileMimeType = V3.FileHelper.GetMimeType(Output.FileFormat);
-            byte[] fileBytes = V3.FileHelper.GetFileBytes(Output.FileFormat, ImageData);
+            string fullFileName = String.Format("{0}.{1}", send.FileName, FileHelper.GetFileExtention(Output.FileFormat));
+            string fileMimeType = FileHelper.GetMimeType(Output.FileFormat);
+            byte[] fileBytes = FileHelper.GetFileBytes(Output.FileFormat, ImageData);
 
             int projectID;
             int issueTypeID;
@@ -260,21 +263,21 @@ namespace BS.Output.Gemini
             // Open issue in browser
             if (Output.OpenItemInBrowser)
             {
-              V3.WebHelper.OpenUrl(String.Format("{0}/workspace/{1}/item/{2}", Output.Url, projectID, issueID));
+              WebHelper.OpenUrl(String.Format("{0}/workspace/{1}/item/{2}", Output.Url, projectID, issueID));
             }
 
-            return new V3.SendResult(V3.Result.Success,
-                                   new Output(Output.Name,
-                                              Output.Url,
-                                              (rememberCredentials) ? false : Output.IntegratedAuthentication,
-                                              (rememberCredentials) ? userName : Output.UserName,
-                                              (rememberCredentials) ? password : Output.Password,
-                                              Output.FileName,
-                                              Output.FileFormat,
-                                              Output.OpenItemInBrowser,
-                                              projectID,
-                                              issueTypeID,
-                                              issueID));
+            return new SendResult(Result.Success,
+                                  new Output(Output.Name,
+                                             Output.Url,
+                                             (rememberCredentials) ? false : Output.IntegratedAuthentication,
+                                             (rememberCredentials) ? userName : Output.UserName,
+                                             (rememberCredentials) ? password : Output.Password,
+                                             Output.FileName,
+                                             Output.FileFormat,
+                                             Output.OpenItemInBrowser,
+                                             projectID,
+                                             issueTypeID,
+                                             issueID));
 
           }
           catch (RestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
@@ -290,7 +293,7 @@ namespace BS.Output.Gemini
       }
       catch (Exception ex)
       {
-        return new V3.SendResult(V3.Result.Failed, ex.Message);
+        return new SendResult(Result.Failed, ex.Message);
       }
 
     }

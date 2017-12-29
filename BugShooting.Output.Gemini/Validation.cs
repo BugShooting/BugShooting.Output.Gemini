@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 
-namespace BS.Output.Gemini
+namespace BugShooting.Output.Gemini
 {
   class Validation
   {

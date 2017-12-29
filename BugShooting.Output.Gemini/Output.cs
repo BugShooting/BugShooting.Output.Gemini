@@ -1,4 +1,6 @@
-﻿namespace BS.Output.Gemini
+﻿using BS.Plugin.V3.Output;
+
+namespace BugShooting.Output.Gemini
 {
 
   public class Output: IOutput 

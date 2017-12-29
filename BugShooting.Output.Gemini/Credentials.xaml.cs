@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace BS.Output.Gemini
+namespace BugShooting.Output.Gemini
 {
   partial class Credentials : Window
   {
