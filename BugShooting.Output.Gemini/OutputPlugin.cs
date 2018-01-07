@@ -202,7 +202,7 @@ namespace BugShooting.Output.Gemini
               return new SendResult(Result.Canceled);
             }
 
-            string fullFileName = String.Format("{0}.{1}", send.FileName, FileHelper.GetFileExtention(Output.FileFormat));
+            string fullFileName = String.Format("{0}.{1}", send.FileName, FileHelper.GetFileExtension(Output.FileFormat));
             string fileMimeType = FileHelper.GetMimeType(Output.FileFormat);
             byte[] fileBytes = FileHelper.GetFileBytes(Output.FileFormat, ImageData);
 
