@@ -35,6 +35,7 @@ namespace BugShooting.Output.Gemini
 
       NameTextBox.Text = output.Name;
       UrlTextBox.Text = output.Url;
+      IntegratedAuthenticationCheckBox.IsChecked = output.IntegratedAuthentication;
       UserNameTextBox.Text = output.UserName;
       PasswordBox.Password = output.Password;
       FileNameTextBox.Text = output.FileName;
