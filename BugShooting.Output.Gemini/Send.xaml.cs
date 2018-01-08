@@ -90,6 +90,7 @@ namespace BugShooting.Output.Gemini
         ProjectControls.Visibility = Visibility.Visible;
         SummaryControls.Visibility = Visibility.Visible;
         DescriptionControls.Visibility = Visibility.Visible;
+        IssueTypeControls.Visibility = Visibility.Visible;
         IssueIDControls.Visibility = Visibility.Collapsed;
 
         TitleTextBox.SelectAll();
@@ -100,6 +101,7 @@ namespace BugShooting.Output.Gemini
         ProjectControls.Visibility = Visibility.Collapsed;
         SummaryControls.Visibility = Visibility.Collapsed;
         DescriptionControls.Visibility = Visibility.Collapsed;
+        IssueTypeControls.Visibility = Visibility.Collapsed;
         IssueIDControls.Visibility = Visibility.Visible;
         
         IssueIDTextBox.SelectAll();
