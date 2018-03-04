@@ -1,4 +1,5 @@
 ﻿using BS.Plugin.V3.Output;
+using System;
 
 namespace BugShooting.Output.Gemini
 {
@@ -12,7 +13,7 @@ namespace BugShooting.Output.Gemini
     string password;
     bool integratedAuthentication;
     string fileName;
-    string fileFormat;
+    Guid fileFormatID;
     bool openItemInBrowser;
     int lastProjectID;
     int lastIssueTypeID;
@@ -23,8 +24,8 @@ namespace BugShooting.Output.Gemini
                   bool integratedAuthentication,
                   string userName,
                   string password,
-                  string fileName, 
-                  string fileFormat,
+                  string fileName,
+                  Guid fileFormatID,
                   bool openItemInBrowser, 
                   int lastProjectID, 
                   int lastIssueTypeID,
@@ -36,7 +37,7 @@ namespace BugShooting.Output.Gemini
       this.userName = userName;
       this.password = password;
       this.fileName = fileName;
-      this.fileFormat = fileFormat;
+      this.fileFormatID = fileFormatID;
       this.openItemInBrowser = openItemInBrowser;
       this.lastProjectID = lastProjectID;
       this.lastIssueTypeID = lastIssueTypeID;
@@ -78,9 +79,9 @@ namespace BugShooting.Output.Gemini
       get { return fileName; }
     }
 
-    public string FileFormat
+    public Guid FileFormatID
     {
-      get { return fileFormat; }
+      get { return fileFormatID; }
     }
 
     public bool OpenItemInBrowser

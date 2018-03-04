@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
-using System.Threading.Tasks;
-using System.Linq;
+﻿using BS.Plugin.V3.Common;
+using BS.Plugin.V3.Output;
+using BS.Plugin.V3.Utilities;
 using Countersoft.Gemini.Api;
 using Countersoft.Gemini.Commons.Dto;
 using Countersoft.Gemini.Commons.Entity;
-using BS.Plugin.V3.Output;
-using BS.Plugin.V3.Common;
-using BS.Plugin.V3.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace BugShooting.Output.Gemini
 {
@@ -50,7 +50,7 @@ namespace BugShooting.Output.Gemini
                                  String.Empty, 
                                  String.Empty, 
                                  "Screenshot",
-                                 String.Empty, 
+                                 FileHelper.GetFileFormats().First().ID,
                                  true,
                                  1,
                                  1,
@@ -76,7 +76,7 @@ namespace BugShooting.Output.Gemini
                           edit.UserName,
                           edit.Password,
                           edit.FileName,
-                          edit.FileFormat,
+                          edit.FileFormatID,
                           edit.OpenItemInBrowser,
                           Output.LastProjectID,
                           Output.LastIssueTypeID,
@@ -101,7 +101,7 @@ namespace BugShooting.Output.Gemini
       outputValues.Add("Password",Output.Password, true);
       outputValues.Add("OpenItemInBrowser", Convert.ToString(Output.OpenItemInBrowser));
       outputValues.Add("FileName", Output.FileName);
-      outputValues.Add("FileFormat", Output.FileFormat);
+      outputValues.Add("FileFormatID", Output.FileFormatID.ToString());
       outputValues.Add("LastProjectID", Output.LastProjectID.ToString());
       outputValues.Add("LastIssueTypeID", Output.LastIssueTypeID.ToString());
       outputValues.Add("LastIssueID", Output.LastIssueID.ToString());
@@ -118,8 +118,8 @@ namespace BugShooting.Output.Gemini
                         Convert.ToBoolean(OutputValues["IntegratedAuthentication", Convert.ToString(true)]),
                         OutputValues["UserName", ""],
                         OutputValues["Password", ""],
-                        OutputValues["FileName", "Screenshot"], 
-                        OutputValues["FileFormat", ""],
+                        OutputValues["FileName", "Screenshot"],
+                        new Guid(OutputValues["FileFormatID", ""]),
                         Convert.ToBoolean(OutputValues["OpenItemInBrowser", Convert.ToString(true)]),
                         Convert.ToInt32(OutputValues["LastProjectID", "1"]),
                         Convert.ToInt32(OutputValues["LastIssueTypeID", "1"]),
@@ -202,9 +202,11 @@ namespace BugShooting.Output.Gemini
               return new SendResult(Result.Canceled);
             }
 
-            string fullFileName = String.Format("{0}.{1}", send.FileName, FileHelper.GetFileExtension(Output.FileFormat));
-            string fileMimeType = FileHelper.GetMimeType(Output.FileFormat);
-            byte[] fileBytes = FileHelper.GetFileBytes(Output.FileFormat, ImageData);
+            IFileFormat fileFormat = FileHelper.GetFileFormat(Output.FileFormatID);
+
+            string fullFileName = String.Format("{0}.{1}", send.FileName, fileFormat.FileExtension);
+
+            byte[] fileBytes = FileHelper.GetFileBytes(Output.FileFormatID, ImageData);
 
             int projectID;
             int issueTypeID;
@@ -227,7 +229,7 @@ namespace BugShooting.Output.Gemini
 
               IssueAttachment attachment = new IssueAttachment();
               attachment.ContentLength = fileBytes.Length;
-              attachment.ContentType = fileMimeType;
+              attachment.ContentType = fileFormat.MimeType;
               attachment.Content = fileBytes;
               attachment.Name = fullFileName;
               issue.Attachments.Add(attachment);
@@ -251,7 +253,7 @@ namespace BugShooting.Output.Gemini
               attachment.ProjectId = projectID;
               attachment.IssueId = issueID;
               attachment.ContentLength = fileBytes.Length;
-              attachment.ContentType = fileMimeType;
+              attachment.ContentType = fileFormat.MimeType;
               attachment.Content = fileBytes;
               attachment.Name = fullFileName;
         
@@ -273,7 +275,7 @@ namespace BugShooting.Output.Gemini
                                              (rememberCredentials) ? userName : Output.UserName,
                                              (rememberCredentials) ? password : Output.Password,
                                              Output.FileName,
-                                             Output.FileFormat,
+                                             Output.FileFormatID,
                                              Output.OpenItemInBrowser,
                                              projectID,
                                              issueTypeID,
