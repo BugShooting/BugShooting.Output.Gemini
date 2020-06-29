@@ -22,7 +22,7 @@ namespace BugShooting.Output.Gemini
       List<ProjectItem> projectItems = new List<ProjectItem>();
       foreach (ProjectDto project in projects)
       {
-        projectItems.Add(new ProjectItem(project.Entity.Id, project.Label, project.Entity.WorkflowId));
+        projectItems.Add(new ProjectItem(project.Entity.Id, project.Entity.Name, project.Entity.WorkflowId));
       }
       ProjectComboBox.ItemsSource = projectItems;
 
