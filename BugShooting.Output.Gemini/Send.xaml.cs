@@ -22,7 +22,7 @@ namespace BugShooting.Output.Gemini
       List<ProjectItem> projectItems = new List<ProjectItem>();
       foreach (ProjectDto project in projects)
       {
-        projectItems.Add(new ProjectItem(project.Entity.Id, project.Entity.Name, project.Entity.WorkflowId));
+        projectItems.Add(new ProjectItem(project.Entity.Id, project.Entity.Name, project.Entity.TemplateId));
       }
       ProjectComboBox.ItemsSource = projectItems;
 
@@ -34,7 +34,7 @@ namespace BugShooting.Output.Gemini
       {
         IssueTypeComboBox.SelectedValue = lastIssueTypeID;
       }
-          
+
       IssueIDTextBox.Text = lastIssueID.ToString();
       FileNameTextBox.Text = fileName;
 
@@ -51,7 +51,7 @@ namespace BugShooting.Output.Gemini
     {
       get { return NewIssue.IsChecked.Value; }
     }
- 
+
     public int ProjectID
     {
       get { return (int)ProjectComboBox.SelectedValue; }
@@ -103,7 +103,7 @@ namespace BugShooting.Output.Gemini
         DescriptionControls.Visibility = Visibility.Collapsed;
         IssueTypeControls.Visibility = Visibility.Collapsed;
         IssueIDControls.Visibility = Visibility.Visible;
-        
+
         IssueIDTextBox.SelectAll();
         IssueIDTextBox.Focus();
       }
@@ -122,12 +122,12 @@ namespace BugShooting.Output.Gemini
       else
       {
 
-        int workflowId = ((ProjectItem)ProjectComboBox.SelectedItem).WorkflowId;
-        
+        int templateId = ((ProjectItem)ProjectComboBox.SelectedItem).TemplateId;
+
         List<ItemTypeItem> itemTypeItems = new List<ItemTypeItem>();
         foreach (IssueTypeDto itemType in issueTypes)
         {
-          if (itemType.Entity.Workflow.ReferenceId == workflowId)
+          if (itemType.Entity.TemplateId == templateId)
           {
             itemTypeItems.Add(new ItemTypeItem(itemType.Entity.Id, itemType.Entity.Label));
           }
@@ -142,7 +142,7 @@ namespace BugShooting.Output.Gemini
     {
       e.Handled = Regex.IsMatch(e.Text, "[^0-9]+");
     }
-    
+
     private void ValidateData(object sender, EventArgs e)
     {
       OK.IsEnabled = ((CreateNewIssue && Validation.IsValid(ProjectComboBox) && Validation.IsValid(IssueTypeComboBox) && Validation.IsValid(TitleTextBox) && Validation.IsValid(DescriptionTextBox)) ||
@@ -159,16 +159,16 @@ namespace BugShooting.Output.Gemini
 
   internal class ProjectItem
   {
-    
+
     private int id;
     private string name;
-    private int workflowId;
+    private int templateId;
 
-    public ProjectItem(int id, string name, int workflowId)
+    public ProjectItem(int id, string name, int templateId)
     {
       this.id = id;
       this.name = name;
-      this.workflowId = workflowId;
+      this.templateId = templateId;
     }
 
     public int Id
@@ -181,9 +181,9 @@ namespace BugShooting.Output.Gemini
       get { return name; }
     }
 
-    public int WorkflowId
+    public int TemplateId
     {
-      get { return workflowId; }
+      get { return templateId; }
     }
 
   }
@@ -208,7 +208,7 @@ namespace BugShooting.Output.Gemini
     {
       get { return name; }
     }
-    
+
   }
 
 }
